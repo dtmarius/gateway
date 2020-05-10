@@ -1,0 +1,14 @@
+GET https://swapi.dev/api/people/1?format=wookiee
+
+###
+
+GET http://localhost:8080/gateway/backend1/demo
+
+###
+
+POST http://localhost:8080/gateway/backend1/demo
+Content-Type: text/plain;charset=utf-8
+Cookie: default-theme=ngax; __test=1; JSESSIONID=62eebc943ec7df23cf3ddcf714e9; treeForm_tree-hi=treeForm:tree:configurations:server-config:batch; TCSESSIONID=181907AD1DFABEE47440E6D5D5315BBF; io=sKEmgbDM2AZlDVhlAAAK
+Keep-Alive: timeout=5, max=1000
+
+Hello World

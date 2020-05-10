@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd" version="4.0">
+    <session-config>
+        <session-timeout>
+            30
+        </session-timeout>
+    </session-config>
+
+    <servlet>
+        <servlet-name>backend1-gateway</servlet-name>
+        <servlet-class>com.dtmarius.gateway.GatewayServlet</servlet-class>
+        <init-param>
+            <param-name>requestURLRegex</param-name>
+            <!-- ^(?<protocol>https?)://(?:localhost|127.0.0.1)(?::8080)?/gateway/backend1/(?<path>.*) -->
+            <param-value>^(?&lt;protocol&gt;https?)://(?:localhost|127.0.0.1)(?::8080)?/gateway/backend1/(?&lt;path&gt;.*)</param-value>
+        </init-param>
+        <init-param>
+            <param-name>targetURLTemplate</param-name>
+            <param-value>${protocol}://example.com/${path}</param-value>
+        </init-param>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>backend1-gateway</servlet-name>
+        <url-pattern>/backend1/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>backend2-gateway</servlet-name>
+        <servlet-class>com.dtmarius.gateway.GatewayServlet</servlet-class>
+        <init-param>
+            <param-name>requestURLRegex</param-name>
+            <!-- (?<protocol>https?)://localhost(:8080)?/gateway/backend1/(?<path>.*) -->
+            <param-value>(?&lt;protocol&gt;https?)://localhost(:8080)?/gateway/backend2/(?&lt;path&gt;.*)</param-value>
+        </init-param>
+        <init-param>
+            <param-name>targetURLTemplate</param-name>
+            <param-value>${protocol}://localhost:8080/a/${path}</param-value>
+        </init-param>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>backend2-gateway</servlet-name>
+        <url-pattern>/backend2/*</url-pattern>
+    </servlet-mapping>
+
+</web-app>
