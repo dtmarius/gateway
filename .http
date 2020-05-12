@@ -3,7 +3,7 @@ GET https://swapi.dev/api/people/1?format=wookiee
 ###
 
 GET http://localhost:8080/gateway/backend1/demo
-
+Accept: text/plain, text/html
 ###
 
 POST http://localhost:8080/gateway/backend1/demo

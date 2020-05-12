@@ -1,13 +1,12 @@
 package com.dtmarius.gateway;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.http.HttpRequest;
 import java.util.*;
-import java.util.function.Supplier;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -15,6 +14,8 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 
 public class IncomingHttpRequest {
+
+    private final Logger log = Logger.getLogger(IncomingHttpRequest.class.getSimpleName());
 
     private final URL url;
 
@@ -30,8 +31,6 @@ public class IncomingHttpRequest {
         this.method = method;
         this.headerMap = headerMap;
         this.body = body;
-        new StringBuffer(3).append("a");
-
     }
 
     public static IncomingHttpRequest ofHttpServletRequest(final HttpServletRequest servletRequest) throws IOException {
@@ -55,11 +54,17 @@ public class IncomingHttpRequest {
 
         final String[] headers = this.getHeaderMap().entrySet().stream().map(entry -> {
             String headerName = entry.getKey();
-            String headerValue = entry.getValue().stream().collect(Collectors.joining(", "));
+            if(HeaderUtils.isHeaderRestricted(headerName)){
+                return Collections.emptyList();
+            }
+            String headerValue = entry.getValue().stream().collect(Collectors.joining("#"));
             return Arrays.asList(headerName, headerValue);
         })
                 .flatMap(Collection::stream)
                 .toArray(String[]::new);
+                            // headers: [accept-encoding, gzip, deflate, user-agent, vscode-restclient]|#]
+
+        log.info("headers: " + Arrays.toString(headers));
 
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(this.getUrl().toURI())
