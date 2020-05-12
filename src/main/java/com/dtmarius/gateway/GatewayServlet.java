@@ -14,6 +14,7 @@ import java.net.http.HttpResponse;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.servlet.RequestDispatcher;
@@ -58,7 +59,18 @@ public class GatewayServlet extends HttpServlet {
         final HttpResponse.BodyHandler<byte[]> res = HttpResponse.BodyHandlers.ofByteArray();
         try {
             HttpResponse<byte[]> httpResponse = client.send(incomingHttpRequest.toHttpRequest(), res);
-            // TODO: send httpResponse back
+ 
+
+            
+            httpResponse.headers().map().forEach((headerName, headerValueList)->{
+                String headerValue = headerValueList.stream().collect(Collectors.joining(", "));
+                response.addHeader(headerName, headerValue);
+            });
+
+            byte[] body = httpResponse.body();
+            response.getOutputStream().write(body);
+
+
         } catch (InterruptedException | URISyntaxException e) { // TODO: rethink error handling
             e.printStackTrace();
         }
