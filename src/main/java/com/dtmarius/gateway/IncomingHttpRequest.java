@@ -6,6 +6,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.http.HttpRequest;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -15,9 +16,9 @@ import javax.servlet.http.HttpServletRequest;
 
 public class IncomingHttpRequest {
 
-    private final Logger log = Logger.getLogger(IncomingHttpRequest.class.getSimpleName());
+    private final static Logger log = Logger.getLogger(IncomingHttpRequest.class.getSimpleName());
 
-    private final URL url;
+    private URL url;
 
     private final String method;
 
@@ -25,7 +26,7 @@ public class IncomingHttpRequest {
 
     private final byte[] body;
 
-    IncomingHttpRequest(final URL url, String method, final HashMap<String, ArrayList<String>> headerMap,
+    IncomingHttpRequest(final URL url, final String method, final HashMap<String, ArrayList<String>> headerMap,
             final byte[] body) {
         this.url = url;
         this.method = method;
@@ -42,6 +43,7 @@ public class IncomingHttpRequest {
         for (final Iterator<String> it = servletRequest.getHeaderNames().asIterator(); it.hasNext();) {
             final String headerName = it.next();
             final ArrayList<String> headerValues = Collections.list(servletRequest.getHeaders(headerName));
+            log.info("toIncommingRequest: " + headerName + ": " + Arrays.toString(headerValues.toArray()));
             headerMap.put(headerName, headerValues);
         }
 
@@ -52,29 +54,27 @@ public class IncomingHttpRequest {
 
     public HttpRequest toHttpRequest() throws URISyntaxException, IOException {
 
-        final String[] headers = this.getHeaderMap().entrySet().stream().map(entry -> {
-            String headerName = entry.getKey();
-            if(HeaderUtils.isHeaderRestricted(headerName)){
-                return Collections.emptyList();
+        final ArrayList<String> headerList = new ArrayList<>();
+        for (final Entry<String, ArrayList<String>> entry : this.getHeaderMap().entrySet()) {
+            final String headerName = entry.getKey();
+            if (HeaderUtils.isHeaderRestricted(headerName)) {
+                continue;
             }
-            String headerValue = entry.getValue().stream().collect(Collectors.joining("#"));
-            return Arrays.asList(headerName, headerValue);
-        })
-                .flatMap(Collection::stream)
-                .toArray(String[]::new);
-                            // headers: [accept-encoding, gzip, deflate, user-agent, vscode-restclient]|#]
+            final String headerValue = entry.getValue().stream().collect(Collectors.joining(", "));
+            headerList.add(headerName);
+            headerList.add(headerValue);
+        }
+
+        final String[] headers = headerList.toArray(new String[headerList.size()]);
 
         log.info("headers: " + Arrays.toString(headers));
 
-        HttpRequest httpRequest = HttpRequest.newBuilder()
-                .uri(this.getUrl().toURI())
-                .headers(headers)
-                .method(this.getMethod(), HttpRequest.BodyPublishers.ofByteArray(this.getBody()))
-                .build();
+        final HttpRequest httpRequest = HttpRequest.newBuilder().uri(this.getUrl().toURI()).headers(headers)
+                .method(this.getMethod(), HttpRequest.BodyPublishers.ofByteArray(this.getBody())).build();
         return httpRequest;
     }
 
-    URL resolveTargetURL(Pattern pattern, String targetURLTemplate) throws MalformedURLException {
+    public URL resolveTargetURL(final Pattern pattern, final String targetURLTemplate) throws MalformedURLException {
         final Matcher matcher = pattern.matcher(this.getUrl().toString());
         if (matcher.find() == false) {
             return null; // TODO: rethink error handling
@@ -82,14 +82,18 @@ public class IncomingHttpRequest {
 
         final String resolvedTargetURL = matcher.replaceAll(targetURLTemplate);
 
-        return new URL(resolvedTargetURL);
+        URL targetURL = new URL(resolvedTargetURL);
+        this.url = targetURL;
+        return targetURL;
     }
 
     public URL getUrl() {
         return url;
     }
 
-    public String getMethod() { return method; }
+    public String getMethod() {
+        return method;
+    }
 
     public HashMap<String, ArrayList<String>> getHeaderMap() {
         return headerMap;

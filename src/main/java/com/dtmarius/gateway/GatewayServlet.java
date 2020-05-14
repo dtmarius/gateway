@@ -7,7 +7,9 @@ package com.dtmarius.gateway;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -34,9 +36,6 @@ public class GatewayServlet extends HttpServlet {
 
     private Pattern pattern;
 
-    @Inject
-    private HttpTranslator translator;
-
     @Override
     public void init() throws ServletException {
         this.requestURLRegex = this.getInitParameter("requestURLRegex");
@@ -49,17 +48,23 @@ public class GatewayServlet extends HttpServlet {
             throws ServletException, IOException {
 
         IncomingHttpRequest incomingHttpRequest = IncomingHttpRequest.ofHttpServletRequest(request);
+        incomingHttpRequest.resolveTargetURL(pattern, targetURLTemplate);
 
         final HttpClient client = HttpClient.newHttpClient();
         final HttpResponse.BodyHandler<byte[]> res = HttpResponse.BodyHandlers.ofByteArray();
         try {
-            HttpResponse<byte[]> httpResponse = client.send(incomingHttpRequest.toHttpRequest(), res);
- 
+            HttpRequest httpReq = incomingHttpRequest.toHttpRequest();
+            log.info("Calling URL: " + httpReq.uri().toString());
+            HttpResponse<byte[]> httpResponse = client.send(httpReq, res);
+
             httpResponse.headers().map().forEach((headerName, headerValueList) -> {
-                if(HeaderUtils.isHeaderRestricted(headerName)){
-                    return;
-                }
                 String headerValue = headerValueList.stream().collect(Collectors.joining(", "));
+                log.info("httpResponse to res: " + headerName + ": " + headerValue);
+
+                if (HeaderUtils.isHeaderRestricted(headerName)) {
+                    return;
+
+                }
                 response.addHeader(headerName, headerValue);
             });
 
