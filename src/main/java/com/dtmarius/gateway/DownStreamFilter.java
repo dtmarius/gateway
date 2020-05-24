@@ -11,15 +11,31 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 
 /**
  *
  * @author dtmarius.com
  */
-public class DownStreamFilter implements Filter{
+public class DownstreamFilter implements Filter{
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+        if((response instanceof HttpServletResponse) == false){
+           // TODO: error handling evtl. exception???
+        //    return;
+        }
+
+        // HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+        // HttpServletResponseWrapper wrapper = new HttpServletResponseWrapper(httpServletResponse);
+        // wrapper.setHeader(name, value);
+
+        CustomHttpServletResponse customHttpServletResponse = new CustomHttpServletResponse((HttpServletResponse)response);
+        customHttpServletResponse.setHeader("X-Marius", "Hello World");
+        // customHttpServletResponse.addCookie(cookie); // evtl muss man die methoden gar nicht überschreiben um das zeugs zu setzen =.0
+        response = customHttpServletResponse;
+        
         chain.doFilter(request, response);
-    } 
+    }
 }
