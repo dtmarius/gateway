@@ -1,7 +1,6 @@
 package com.dtmarius.gateway.filter;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import javax.servlet.Filter;
@@ -10,9 +9,7 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -78,14 +75,12 @@ public class UpstreamSetHeaderFilter implements Filter {
     }
 
     void process(HttpServletRequest request) {
-        String headerValue = request.getHeader(headerName);
-        if (headerValue != null && overwriteExistingHeader == false)
+        if (request.getHeader(headerName) != null && overwriteExistingHeader == false)
             return;
 
-        HttpServletRequestWrapper httpRequest = new HttpServletRequestWrapper(request);
+        ModifyableHttpServletRequest httpRequest = new ModifyableHttpServletRequest(request);
         request = httpRequest;
-        httpRequest.set
-
+        httpRequest.setHeader(this.headerName, this.headerValue);
     }
 
     private boolean notInstanceOfHttpServlet(ServletRequest request) {
