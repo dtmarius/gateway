@@ -28,6 +28,10 @@ public class ModifyableHttpServletRequest extends HttpServletRequestWrapper {
         headerMap.put(headerName, Arrays.asList(headerValue));
     }
 
+    public void removeHeader(final String headerName) {
+        headerMap.remove(headerName);
+    }
+
     /**
      * {@inheritDoc}
      */
