@@ -18,7 +18,10 @@ import javax.validation.constraints.NotNull;
  * 
  * The default value for the flag overwriteExistingHeader is true.
  * 
- * configuration example: <code>
+ * configuration example:
+ * 
+ * <pre>
+ * {@code 
     <filter>
         <filter-name>upstreamSetHeaderFilter-MyCustomHeader</filter-name>
         <filter-class>com.dtmarius.gateway.filter.UpstreamSetHeaderFilter</filter-class>
@@ -35,7 +38,8 @@ import javax.validation.constraints.NotNull;
             <param-value>false</param-value>
         </init-param>
     </filter>
-   </code>
+   }
+ * </pre>
  */
 public class UpstreamSetHeaderFilter implements Filter {
 
