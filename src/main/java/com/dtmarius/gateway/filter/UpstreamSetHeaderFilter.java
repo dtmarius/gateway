@@ -10,7 +10,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.constraints.NotNull;
 
 /**
  * A UpstreamSetHeaderFilter is used to set a configured header before the
@@ -49,7 +48,7 @@ public class UpstreamSetHeaderFilter implements Filter {
     private String headerValue;
     private boolean overwriteExistingHeader = true;
 
-    UpstreamSetHeaderFilter(@NotNull String headerName, String headerValue, boolean overwriteExistingHeader) {
+    UpstreamSetHeaderFilter(String headerName, String headerValue, boolean overwriteExistingHeader) {
         this.headerName = headerName;
         this.headerValue = headerValue;
         this.overwriteExistingHeader = overwriteExistingHeader;
