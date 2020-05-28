@@ -34,7 +34,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class UpstreamRemoveHeaderFilter implements Filter {
 
-    private static Logger log = Logger.getLogger(UpstreamSetHeaderFilter.class.getName());
+    private static Logger log = Logger.getLogger(UpstreamRemoveHeaderFilter.class.getName());
 
     private String headerNameRegex;
 
