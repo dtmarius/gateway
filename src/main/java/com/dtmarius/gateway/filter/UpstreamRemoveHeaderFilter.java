@@ -66,7 +66,7 @@ public class UpstreamRemoveHeaderFilter implements Filter {
 
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         process(httpServletRequest);
-        chain.doFilter(request, response);
+        chain.doFilter(httpServletRequest, response);
     }
 
     void process(HttpServletRequest request) {
@@ -78,8 +78,6 @@ public class UpstreamRemoveHeaderFilter implements Filter {
                 httpRequest.removeHeader(headerName);
             }
         }
-
-        request = httpRequest;
     }
 
     private boolean notInstanceOfHttpServlet(ServletRequest request) {

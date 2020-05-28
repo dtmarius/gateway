@@ -74,7 +74,7 @@ public class UpstreamSetHeaderFilter implements Filter {
 
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         process(httpServletRequest);
-        chain.doFilter(request, response);
+        chain.doFilter(httpServletRequest, response);
     }
 
     void process(HttpServletRequest request) {
@@ -82,7 +82,6 @@ public class UpstreamSetHeaderFilter implements Filter {
             return;
 
         ModifyableHttpServletRequest httpRequest = new ModifyableHttpServletRequest(request);
-        request = httpRequest;
         httpRequest.setHeader(this.headerName, this.headerValue);
     }
 
