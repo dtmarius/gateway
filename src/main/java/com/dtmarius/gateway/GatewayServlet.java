@@ -7,7 +7,6 @@ package com.dtmarius.gateway;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -15,15 +14,17 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- *
- * @author dtmarius.com
+ * GatewayServlet is used to proxy a request from a to b and back. <br>
+ * The restricted headers connection, content-length, expect, host and upgrade
+ * are automatically set by the appliation server.
+ * 
+ * Headers can be processed stream up and down by various servlet filters.
  */
 public class GatewayServlet extends HttpServlet {
 
