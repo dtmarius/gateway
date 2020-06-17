@@ -1,2 +1,2 @@
-FROM airhacks/glassfish
-COPY ./target/brickfolio.war ${DEPLOYMENT_DIR}
+FROM payara/server-web
+COPY ./target/gateway.war ${DEPLOY_DIR}

@@ -62,39 +62,26 @@
         <url-pattern>/backend3/*</url-pattern>
     </servlet-mapping>
 
-
+    <!-- Filter is configured correctly and processes the request but the header is not present :/ -->
     <filter>
-        <filter-name>downstreamHeaderReplaceFilter</filter-name>
-        <filter-class>com.dtmarius.gateway.DownstreamHeaderReplaceFilter</filter-class>
-        <init-param>
-            <param-name>headerName</param-name>
-            <param-value>X-Marius</param-value>
-        </init-param>
-        <init-param>
-            <param-name>headerValueRegex</param-name>
-            <param-value>^(?&lt;value&gt;.*)</param-value>
-        </init-param>
-        <init-param>
-            <param-name>headerValueTemplate</param-name>
-            <param-value>*${value}*</param-value>
-        </init-param>
-    </filter>
-
-    <filter>
-        <filter-name>upstreamSetHeaderFilter-MyCustomHeader</filter-name>
+        <filter-name>abc</filter-name>
         <filter-class>com.dtmarius.gateway.filter.UpstreamSetHeaderFilter</filter-class>
         <init-param>
             <param-name>headerName</param-name>
-            <param-value>MyCustomHeader</param-value>
+            <param-value>MyCustomHeaderX</param-value>
         </init-param>
         <init-param>
             <param-name>headerValue</param-name>
-            <param-value>Hello World</param-value>
+            <param-value>Hello World!</param-value>
         </init-param>
         <init-param>
             <param-name>overwriteExistingHeader</param-name>
-            <param-value>false</param-value>
+            <param-value>true</param-value>
         </init-param>
     </filter>
+    <filter-mapping>
+        <filter-name>abc</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
 
 </web-app>

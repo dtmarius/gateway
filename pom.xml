@@ -38,14 +38,12 @@
             <scope>test</scope>
         </dependency>
         <!-- Fix for missing Resourcebundle -->
-        <!-- 
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
             <version>3.1.0</version>
             <scope>test</scope>
         </dependency>
-        -->
     </dependencies>
     <build>
         <finalName>gateway</finalName>

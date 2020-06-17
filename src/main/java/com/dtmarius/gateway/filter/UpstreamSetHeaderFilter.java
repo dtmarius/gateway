@@ -3,13 +3,12 @@ package com.dtmarius.gateway.filter;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpFilter;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * A UpstreamSetHeaderFilter is used to set a configured header before the
@@ -40,13 +39,18 @@ import javax.servlet.http.HttpServletRequest;
    }
  * </pre>
  */
-public class UpstreamSetHeaderFilter implements Filter {
+public class UpstreamSetHeaderFilter extends HttpFilter {
+
+    private static final long serialVersionUID = -3010583173466063766L;
 
     private static Logger log = Logger.getLogger(UpstreamSetHeaderFilter.class.getName());
 
     private String headerName;
     private String headerValue;
     private boolean overwriteExistingHeader = true;
+
+    UpstreamSetHeaderFilter() {
+    }
 
     UpstreamSetHeaderFilter(String headerName, String headerValue, boolean overwriteExistingHeader) {
         this.headerName = headerName;
@@ -65,28 +69,26 @@ public class UpstreamSetHeaderFilter implements Filter {
     }
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+    public void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        if (notInstanceOfHttpServlet(request)) {
+        log.info("doFilter__> UpstreamSetHeaderFilter");
+
+        if (request.getHeader(headerName) != null && overwriteExistingHeader == false) {
             chain.doFilter(request, response);
             return;
         }
+        // overrideExisting flag funktioniert nicht ganz. Der header wird nicht
+        // überschrieben sondern nur hinzugefügt
+        MutableHttpServletRequest mutableRequest = new MutableHttpServletRequest(request);
+        mutableRequest.setHeader(this.headerName, this.headerValue);
+        log.info("processed");
 
-        HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-        process(httpServletRequest);
-        chain.doFilter(httpServletRequest, response);
-    }
+        // Todo logik in methode auslagern und besser bennen! Referenzfehler auch bei
+        // den anderen Filtern beheben.
 
-    void process(HttpServletRequest request) {
-        if (request.getHeader(headerName) != null && overwriteExistingHeader == false)
-            return;
-
-        ModifyableHttpServletRequest httpRequest = new ModifyableHttpServletRequest(request);
-        httpRequest.setHeader(this.headerName, this.headerValue);
-    }
-
-    private boolean notInstanceOfHttpServlet(ServletRequest request) {
-        return !(request instanceof HttpServletRequest);
+        // Prüfen warum der filter NICHT rückwärts durchlaufen wird! Um sicher zu gehen
+        // das der Filter nur Upstream aufgerufen wird.
+        chain.doFilter(mutableRequest, response);
     }
 
     @Override

@@ -1,18 +1,16 @@
 package com.dtmarius.gateway.filter;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpFilter;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * A UpstreamRewriteHeaderValueFilter is used to rewrite the header value to the
@@ -42,7 +40,9 @@ import javax.servlet.http.HttpServletRequest;
    }
  * </pre>
  */
-public class UpstreamRewriteHeaderValueFilter implements Filter {
+public class UpstreamRewriteHeaderValueFilter extends HttpFilter {
+
+    private static final long serialVersionUID = 6941983021246085864L;
 
     private static Logger log = Logger.getLogger(UpstreamRemoveHeaderFilter.class.getName());
 
@@ -51,6 +51,9 @@ public class UpstreamRewriteHeaderValueFilter implements Filter {
     private String headerValueTemplate;
 
     private Pattern headerValueRegexPattern;
+
+    UpstreamRewriteHeaderValueFilter() {
+    }
 
     UpstreamRewriteHeaderValueFilter(String headerName, String headerValueRegex, String headerValueTemplate) {
         initialize(headerName, headerValueRegex, headerValueTemplate);
@@ -75,20 +78,15 @@ public class UpstreamRewriteHeaderValueFilter implements Filter {
     }
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+    public void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        if (notInstanceOfHttpServlet(request)) {
-            chain.doFilter(request, response);
-            return;
-        }
-
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         process(httpServletRequest);
         chain.doFilter(httpServletRequest, response);
     }
 
     void process(HttpServletRequest request) {
-        ModifyableHttpServletRequest httpRequest = new ModifyableHttpServletRequest(request);
+        MutableHttpServletRequest mutableRequest = new MutableHttpServletRequest(request);
 
         String headerValue = request.getHeader(headerName);
         if (headerValue == null) {
@@ -98,11 +96,8 @@ public class UpstreamRewriteHeaderValueFilter implements Filter {
         Matcher matcher = headerValueRegexPattern.matcher(headerValue);
         String processedHeaderValue = matcher.replaceAll(headerValueTemplate);
 
-        httpRequest.setHeader(headerName, processedHeaderValue);
-    }
-
-    private boolean notInstanceOfHttpServlet(ServletRequest request) {
-        return !(request instanceof HttpServletRequest);
+        mutableRequest.setHeader(headerName, processedHeaderValue);
+        request = mutableRequest;
     }
 
     @Override

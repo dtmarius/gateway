@@ -11,11 +11,11 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
-public class ModifyableHttpServletRequest extends HttpServletRequestWrapper {
+public class MutableHttpServletRequest extends HttpServletRequestWrapper {
 
     private HashMap<String, List<String>> headerMap = new HashMap<>();
 
-    public ModifyableHttpServletRequest(final HttpServletRequest request) {
+    public MutableHttpServletRequest(final HttpServletRequest request) {
         super(request);
         for (final Iterator<String> it = super.getHeaderNames().asIterator(); it.hasNext();) {
             final String headerName = it.next();

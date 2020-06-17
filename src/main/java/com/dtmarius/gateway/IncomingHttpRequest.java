@@ -7,7 +7,6 @@ import java.net.URL;
 import java.net.http.HttpRequest;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -15,8 +14,6 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 
 public class IncomingHttpRequest {
-
-    private final static Logger log = Logger.getLogger(IncomingHttpRequest.class.getSimpleName());
 
     private URL url;
 
@@ -43,7 +40,6 @@ public class IncomingHttpRequest {
         for (final Iterator<String> it = servletRequest.getHeaderNames().asIterator(); it.hasNext();) {
             final String headerName = it.next();
             final ArrayList<String> headerValues = Collections.list(servletRequest.getHeaders(headerName));
-            log.info("toIncommingRequest: " + headerName + ": " + Arrays.toString(headerValues.toArray()));
             headerMap.put(headerName, headerValues);
         }
 
@@ -66,8 +62,6 @@ public class IncomingHttpRequest {
         }
 
         final String[] headers = headerList.toArray(new String[headerList.size()]);
-
-        log.info("headers: " + Arrays.toString(headers));
 
         final HttpRequest httpRequest = HttpRequest.newBuilder().uri(this.getUrl().toURI()).headers(headers)
                 .method(this.getMethod(), HttpRequest.BodyPublishers.ofByteArray(this.getBody())).build();

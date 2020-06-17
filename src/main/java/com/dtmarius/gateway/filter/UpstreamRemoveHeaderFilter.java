@@ -5,13 +5,12 @@ import java.util.Iterator;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpFilter;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * A UpstreamRemoveHeaderFilter is used to remove headers matching the
@@ -32,13 +31,18 @@ import javax.servlet.http.HttpServletRequest;
    }
  * </pre>
  */
-public class UpstreamRemoveHeaderFilter implements Filter {
+public class UpstreamRemoveHeaderFilter extends HttpFilter {
+
+    private static final long serialVersionUID = -8991376492972140334L;
 
     private static Logger log = Logger.getLogger(UpstreamRemoveHeaderFilter.class.getName());
 
     private String headerNameRegex;
 
     private Pattern headerNameRegexPattern;
+
+    UpstreamRemoveHeaderFilter() {
+    }
 
     UpstreamRemoveHeaderFilter(String headerNameRegex) {
         initialize(headerNameRegex);
@@ -57,31 +61,23 @@ public class UpstreamRemoveHeaderFilter implements Filter {
     }
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+    public void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        if (notInstanceOfHttpServlet(request)) {
-            chain.doFilter(request, response);
-            return;
-        }
 
-        HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-        process(httpServletRequest);
-        chain.doFilter(httpServletRequest, response);
+        process(request);
+        chain.doFilter(request, response);
     }
 
     void process(HttpServletRequest request) {
-        ModifyableHttpServletRequest httpRequest = new ModifyableHttpServletRequest(request);
+        MutableHttpServletRequest mutableRequest = new MutableHttpServletRequest(request);
         for (final Iterator<String> it = request.getHeaderNames().asIterator(); it.hasNext();) {
             final String headerName = it.next();
 
             if (headerNameRegexPattern.matcher(headerName).matches()) {
-                httpRequest.removeHeader(headerName);
+                mutableRequest.removeHeader(headerName);
             }
         }
-    }
-
-    private boolean notInstanceOfHttpServlet(ServletRequest request) {
-        return !(request instanceof HttpServletRequest);
+        request = mutableRequest;
     }
 
     @Override
