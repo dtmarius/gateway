@@ -67,4 +67,15 @@ public class RequestWithoutHeaders {
 		verify(chain).doFilter(any(MutableHttpServletRequest.class), any(HttpServletResponse.class));
 	}
 
+	@Test
+	public void rewriteHeader_ExpectedNoExceptions() throws IOException, ServletException {
+		String headerName = "ExampleHeader";
+		String headerValueRegex = "^(?<value>.*)";
+		String headerValueTemplate = "*${value}*";
+		final UpstreamRewriteHeaderValueFilter filter = //
+				new UpstreamRewriteHeaderValueFilter(headerName, headerValueRegex, headerValueTemplate);
+		filter.doFilter(request, response, chain);
+		verify(chain).doFilter(request, response);
+	}
+
 }

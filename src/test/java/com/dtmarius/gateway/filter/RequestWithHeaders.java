@@ -62,7 +62,6 @@ public class RequestWithHeaders {
 		final String headerName = "X-CustomHeader";
 		final String headerValue = "testValue";
 		final boolean overwriteExistingHeader = false;
-
 		final UpstreamSetHeaderFilter filter = //
 				new UpstreamSetHeaderFilter(headerName, headerValue, overwriteExistingHeader);
 
@@ -87,7 +86,6 @@ public class RequestWithHeaders {
 		final String headerName = "X-MyHeader";
 		final String headerValue = "myOverriddenValue";
 		final boolean overwriteExistingHeader = false;
-
 		final UpstreamSetHeaderFilter filter = //
 				new UpstreamSetHeaderFilter(headerName, headerValue, overwriteExistingHeader);
 
@@ -112,7 +110,6 @@ public class RequestWithHeaders {
 		final String headerName = "X-MyHeader";
 		final String headerValue = "newTestValue";
 		final boolean overwriteExistingHeader = true;
-
 		final UpstreamSetHeaderFilter filter = //
 				new UpstreamSetHeaderFilter(headerName, headerValue, overwriteExistingHeader);
 
@@ -135,17 +132,34 @@ public class RequestWithHeaders {
 	public void removeHeader() throws IOException, ServletException {
 		final String headerNameRegex = "Accept-.*";
 		final UpstreamRemoveHeaderFilter filter = new UpstreamRemoveHeaderFilter(headerNameRegex);
+
 		filter.doFilter(request, response, chain);
 
 		ArgumentCaptor<MutableHttpServletRequest> argCaptor = //
 				ArgumentCaptor.forClass(MutableHttpServletRequest.class);
-
 		verify(chain).doFilter(argCaptor.capture(), any(HttpServletResponse.class));
 
 		final MutableHttpServletRequest mutatedRequest = argCaptor.getValue();
-
 		assertThat(Collections.list(mutatedRequest.getHeaderNames())).doesNotContain("Accept-Encoding");
 		assertThat(Collections.list(mutatedRequest.getHeaderNames())).doesNotContain("Accept-Language");
+	}
+
+	@Test
+	public void rewriteHeader() throws IOException, ServletException {
+		String headerName = "Accept-Language";
+		String headerValueRegex = "^(?<language>.*)-.*$";
+		String headerValueTemplate = "${language}";
+		final UpstreamRewriteHeaderValueFilter filter = //
+				new UpstreamRewriteHeaderValueFilter(headerName, headerValueRegex, headerValueTemplate);
+
+		filter.doFilter(request, response, chain);
+
+		ArgumentCaptor<MutableHttpServletRequest> argCaptor = //
+				ArgumentCaptor.forClass(MutableHttpServletRequest.class);
+		verify(chain).doFilter(argCaptor.capture(), any(HttpServletResponse.class));
+
+		final MutableHttpServletRequest mutatedRequest = argCaptor.getValue();
+		assertThat(Collections.list(mutatedRequest.getHeaders(headerName))).containsExactly("de", "en");
 	}
 
 }

@@ -7,7 +7,9 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
@@ -29,8 +31,20 @@ public class MutableHttpServletRequest extends HttpServletRequestWrapper {
 		headerMap.put(headerName, Arrays.asList(headerValue));
 	}
 
-	public void removeHeadersMatchingPattern(final Pattern regexPattern) {
-		headerMap.keySet().removeIf(headerName -> regexPattern.matcher(headerName).matches());
+	public void removeHeadersMatchingPattern(final Pattern pattern) {
+		headerMap.keySet().removeIf(headerName -> pattern.matcher(headerName).matches());
+	}
+
+	public void rewriteHeaderValuesMatchingPattern(String headerName, Pattern headerValuePattern,
+			String headerValueTemplate) {
+		headerMap.computeIfPresent(headerName, (String name, List<String> values) -> {
+			return values.stream().map(//
+					value -> {
+						Matcher matcher = headerValuePattern.matcher(value);
+						String result = matcher.replaceAll(headerValueTemplate);
+						return result;
+					}).collect(Collectors.toList());
+		});
 	}
 
 	/**
