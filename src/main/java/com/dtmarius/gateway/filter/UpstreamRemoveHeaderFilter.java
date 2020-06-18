@@ -1,7 +1,6 @@
 package com.dtmarius.gateway.filter;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -33,56 +32,46 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class UpstreamRemoveHeaderFilter extends HttpFilter {
 
-    private static final long serialVersionUID = -8991376492972140334L;
+	private static final long serialVersionUID = -8991376492972140334L;
 
-    private static Logger log = Logger.getLogger(UpstreamRemoveHeaderFilter.class.getName());
+	private static Logger log = Logger.getLogger(UpstreamRemoveHeaderFilter.class.getName());
 
-    private String headerNameRegex;
+	private String headerNameRegex;
 
-    private Pattern headerNameRegexPattern;
+	private Pattern headerNameRegexPattern;
 
-    UpstreamRemoveHeaderFilter() {
-    }
+	UpstreamRemoveHeaderFilter() {
+	}
 
-    UpstreamRemoveHeaderFilter(String headerNameRegex) {
-        initialize(headerNameRegex);
-    }
+	UpstreamRemoveHeaderFilter(String headerNameRegex) {
+		initialize(headerNameRegex);
+	}
 
-    @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-        String headerNameRegex = filterConfig.getInitParameter("headerNameRegex");
-        initialize(headerNameRegex);
-    }
+	@Override
+	public void init(FilterConfig filterConfig) throws ServletException {
+		String headerNameRegex = filterConfig.getInitParameter("headerNameRegex");
+		initialize(headerNameRegex);
+	}
 
-    private void initialize(String headerNameRegex) {
-        this.headerNameRegex = headerNameRegex;
-        this.headerNameRegexPattern = Pattern.compile(headerNameRegex);
-        log.info("activated " + this.toString());
-    }
+	private void initialize(String headerNameRegex) {
+		this.headerNameRegex = headerNameRegex;
+		this.headerNameRegexPattern = Pattern.compile(headerNameRegex);
+		log.info("activated " + this.toString());
+	}
 
-    @Override
-    public void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-            throws IOException, ServletException {
+	@Override
+	public void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+			throws IOException, ServletException {
 
-        process(request);
-        chain.doFilter(request, response);
-    }
+		MutableHttpServletRequest mutableRequest = new MutableHttpServletRequest(request);
+		mutableRequest.removeHeadersMatchingPattern(headerNameRegexPattern);
 
-    void process(HttpServletRequest request) {
-        MutableHttpServletRequest mutableRequest = new MutableHttpServletRequest(request);
-        for (final Iterator<String> it = request.getHeaderNames().asIterator(); it.hasNext();) {
-            final String headerName = it.next();
+		chain.doFilter(mutableRequest, response);
+	}
 
-            if (headerNameRegexPattern.matcher(headerName).matches()) {
-                mutableRequest.removeHeader(headerName);
-            }
-        }
-        request = mutableRequest;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("UpstreamRemoveHeaderFilter[headerNameRegex=%s]", headerNameRegex);
-    }
+	@Override
+	public String toString() {
+		return String.format("UpstreamRemoveHeaderFilter[headerNameRegex=%s]", headerNameRegex);
+	}
 
 }
