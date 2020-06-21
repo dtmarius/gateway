@@ -24,6 +24,8 @@ import javax.servlet.http.HttpServletResponse;
  * The restricted headers connection, content-length, expect, host and upgrade
  * are automatically set by the application server.
  * 
+ * If the response contains a body and the status code is not successful, the status code 200 is returned.
+ * 
  * Headers can be processed stream up and down by various servlet filters.
  */
 public class GatewayServlet extends HttpServlet {
@@ -47,7 +49,7 @@ public class GatewayServlet extends HttpServlet {
 	@Override
 	protected void service(final HttpServletRequest request, final HttpServletResponse response)
 			throws ServletException, IOException {
-
+		// TODO: implement support for query parameters
 		IncomingHttpRequest incomingHttpRequest = IncomingHttpRequest.ofHttpServletRequest(request);
 		incomingHttpRequest.resolveTargetURL(pattern, targetURLTemplate);
 
@@ -71,11 +73,20 @@ public class GatewayServlet extends HttpServlet {
 			byte[] body = httpResponse.body();
 			response.getOutputStream().write(body);
 
+			int status = response.getStatus();
+			if (body.length > 0 && isSuccessfulStatusCode(status) == false) {
+				response.setStatus(HttpServletResponse.SC_OK); // TODO: 200? or 207 or ?
+			}
+
 		} catch (InterruptedException | URISyntaxException e) { // TODO: rethink error handling
 			e.printStackTrace();
 		}
 
 		// response.sendError(404, "application error"); // TODO error codes
+	}
+
+	private boolean isSuccessfulStatusCode(int status) {
+		return 200 <= status && status <= 299;
 	}
 
 }
