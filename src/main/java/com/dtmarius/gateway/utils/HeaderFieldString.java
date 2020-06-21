@@ -1,5 +1,10 @@
 package com.dtmarius.gateway.utils;
 
+/**
+ * Header fields are case insensitive. Some application servers convert the header fields to lower case and some leave it as is.
+ * To be application server independent this class is a case insensitive wrapper for header field strings.
+ *
+ */
 public class HeaderFieldString {
 
 	private String headerField;

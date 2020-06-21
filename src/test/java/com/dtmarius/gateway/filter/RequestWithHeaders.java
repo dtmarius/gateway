@@ -57,15 +57,12 @@ public class RequestWithHeaders {
 
 	@Test
 	public void addNewHeader() throws IOException, ServletException {
-
 		// arrange
 		final String headerName = "X-CustomHeader";
 		final String headerValue = "testValue";
 		final boolean overwriteExistingHeader = false;
 		final UpstreamSetHeaderFilter filter = //
 				new UpstreamSetHeaderFilter(headerName, headerValue, overwriteExistingHeader);
-
-		when(request.getHeaders(headerName)).thenReturn(Collections.emptyEnumeration());
 
 		// act
 		filter.doFilter(request, response, chain);
@@ -89,18 +86,14 @@ public class RequestWithHeaders {
 		final UpstreamSetHeaderFilter filter = //
 				new UpstreamSetHeaderFilter(headerName, headerValue, overwriteExistingHeader);
 
-		when(request.getHeaders(headerName)).thenReturn(Collections.emptyEnumeration());
-
 		// act
 		filter.doFilter(request, response, chain);
 
 		// assert
-		final ArgumentCaptor<HttpServletRequest> argCaptor = //
-				ArgumentCaptor.forClass(HttpServletRequest.class);
-		verify(chain).doFilter(argCaptor.capture(), any(HttpServletResponse.class));
+		verify(chain).doFilter(request, response);
 
-		final HttpServletRequest request = argCaptor.getValue();
-		assertThat(request.getHeader(headerName)).isNotEqualTo(headerValue);
+		List<String> headerValues = Collections.list(request.getHeaders(headerName));
+		assertThat(headerValues).containsExactly("testValue");
 	}
 
 	@Test
@@ -113,8 +106,6 @@ public class RequestWithHeaders {
 		final UpstreamSetHeaderFilter filter = //
 				new UpstreamSetHeaderFilter(headerName, headerValue, overwriteExistingHeader);
 
-		when(request.getHeaders(headerName)).thenReturn(Collections.emptyEnumeration());
-
 		// act
 		filter.doFilter(request, response, chain);
 
@@ -124,7 +115,8 @@ public class RequestWithHeaders {
 		verify(chain).doFilter(argCaptor.capture(), any(HttpServletResponse.class));
 
 		final MutableHttpServletRequest mutatedRequest = argCaptor.getValue();
-		assertThat(mutatedRequest.getHeader(headerName)).isEqualTo(headerValue);
+		List<String> headerValues = Collections.list(mutatedRequest.getHeaders(headerName));
+		assertThat(headerValues).containsExactly(headerValue);
 
 	}
 
