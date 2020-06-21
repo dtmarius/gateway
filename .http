@@ -1,6 +1,7 @@
 #User npx http-echo-server for testing
 
 ## queryParas are not used because the servletmethod getRequestURL returns only the url.
+## TODO implement queryparams
 GET http://localhost:8080/gateway/backend2/api/people/1/?format=wookiee
 Accept: application/json
 
@@ -17,8 +18,11 @@ Hello World
 ###
 
 POST http://localhost:8080/gateway/backend3/demo HTTP/1.1
-Content-Type: multipart/form-data;boundary="boundary" 
+#Content-Type: multipart/form-data;boundary="boundary" 
+MyCustomHeaderX: MariusX
+#mycustomheaderx: MariusX
 
+###
 --boundary 
 Content-Disposition: form-data; name="field1" 
 
