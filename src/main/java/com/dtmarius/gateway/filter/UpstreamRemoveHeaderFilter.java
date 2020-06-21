@@ -40,7 +40,7 @@ public class UpstreamRemoveHeaderFilter extends HttpFilter {
 
 	private Pattern headerNameRegexPattern;
 
-	UpstreamRemoveHeaderFilter() {
+	public UpstreamRemoveHeaderFilter() {
 	}
 
 	UpstreamRemoveHeaderFilter(String headerNameRegex) {
@@ -48,7 +48,8 @@ public class UpstreamRemoveHeaderFilter extends HttpFilter {
 	}
 
 	@Override
-	public void init(FilterConfig filterConfig) throws ServletException {
+	public void init() throws ServletException {
+		FilterConfig filterConfig = getFilterConfig();
 		String headerNameRegex = filterConfig.getInitParameter("headerNameRegex");
 		initialize(headerNameRegex);
 	}

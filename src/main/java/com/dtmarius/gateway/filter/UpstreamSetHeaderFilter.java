@@ -49,7 +49,7 @@ public class UpstreamSetHeaderFilter extends HttpFilter {
 	private String headerValue;
 	private boolean overwriteExistingHeader = true;
 
-	UpstreamSetHeaderFilter() {
+	public UpstreamSetHeaderFilter() {
 	}
 
 	UpstreamSetHeaderFilter(String headerName, String headerValue, boolean overwriteExistingHeader) {
@@ -60,7 +60,8 @@ public class UpstreamSetHeaderFilter extends HttpFilter {
 	}
 
 	@Override
-	public void init(FilterConfig filterConfig) throws ServletException {
+	public void init() throws ServletException {
+		FilterConfig filterConfig = getFilterConfig();
 		this.headerName = filterConfig.getInitParameter("headerName");
 		this.headerValue = filterConfig.getInitParameter("headerValue");
 		String overwriteExistingHeaderString = filterConfig.getInitParameter("overwriteExistingHeader");

@@ -51,7 +51,7 @@ public class UpstreamRewriteHeaderValueFilter extends HttpFilter {
 
 	private Pattern headerValueRegexPattern;
 
-	UpstreamRewriteHeaderValueFilter() {
+	public UpstreamRewriteHeaderValueFilter() {
 	}
 
 	UpstreamRewriteHeaderValueFilter(String headerName, String headerValueRegex, String headerValueTemplate) {
@@ -59,7 +59,8 @@ public class UpstreamRewriteHeaderValueFilter extends HttpFilter {
 	}
 
 	@Override
-	public void init(FilterConfig filterConfig) throws ServletException {
+	public void init() throws ServletException {
+		FilterConfig filterConfig = getFilterConfig();
 		String headerName = filterConfig.getInitParameter("headerName");
 		String headerValueRegex = filterConfig.getInitParameter("headerValueRegex");
 		String headerValueTemplate = filterConfig.getInitParameter("headerValueTemplate");
