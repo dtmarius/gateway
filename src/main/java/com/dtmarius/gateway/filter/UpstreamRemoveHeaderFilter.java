@@ -32,47 +32,47 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class UpstreamRemoveHeaderFilter extends HttpFilter {
 
-	private static final long serialVersionUID = -8991376492972140334L;
+    private static final long serialVersionUID = -8991376492972140334L;
 
-	private static Logger log = Logger.getLogger(UpstreamRemoveHeaderFilter.class.getName());
+    private static Logger log = Logger.getLogger(UpstreamRemoveHeaderFilter.class.getName());
 
-	private String headerNameRegex;
+    private String headerNameRegex;
 
-	private Pattern headerNameRegexPattern;
+    private Pattern headerNameRegexPattern;
 
-	public UpstreamRemoveHeaderFilter() {
-	}
+    public UpstreamRemoveHeaderFilter() {
+    }
 
-	UpstreamRemoveHeaderFilter(String headerNameRegex) {
-		initialize(headerNameRegex);
-	}
+    UpstreamRemoveHeaderFilter(String headerNameRegex) {
+        initialize(headerNameRegex);
+    }
 
-	@Override
-	public void init() throws ServletException {
-		FilterConfig filterConfig = getFilterConfig();
-		String headerNameRegex = filterConfig.getInitParameter("headerNameRegex");
-		initialize(headerNameRegex);
-	}
+    @Override
+    public void init() throws ServletException {
+        FilterConfig filterConfig = getFilterConfig();
+        String headerNameRegex = filterConfig.getInitParameter("headerNameRegex");
+        initialize(headerNameRegex);
+    }
 
-	private void initialize(String headerNameRegex) {
-		this.headerNameRegex = headerNameRegex;
-		this.headerNameRegexPattern = Pattern.compile(headerNameRegex);
-		log.info("activated " + this.toString());
-	}
+    private void initialize(String headerNameRegex) {
+        this.headerNameRegex = headerNameRegex;
+        this.headerNameRegexPattern = Pattern.compile(headerNameRegex);
+        log.info("activated " + this.toString());
+    }
 
-	@Override
-	public void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-			throws IOException, ServletException {
+    @Override
+    public void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
 
-		MutableHttpServletRequest mutableRequest = new MutableHttpServletRequest(request);
-		mutableRequest.removeHeadersMatchingPattern(headerNameRegexPattern);
+        MutableHttpServletRequest mutableRequest = new MutableHttpServletRequest(request);
+        mutableRequest.removeHeadersMatchingPattern(headerNameRegexPattern);
 
-		chain.doFilter(mutableRequest, response);
-	}
+        chain.doFilter(mutableRequest, response);
+    }
 
-	@Override
-	public String toString() {
-		return String.format("UpstreamRemoveHeaderFilter[headerNameRegex=%s]", headerNameRegex);
-	}
+    @Override
+    public String toString() {
+        return String.format("UpstreamRemoveHeaderFilter[headerNameRegex=%s]", headerNameRegex);
+    }
 
 }

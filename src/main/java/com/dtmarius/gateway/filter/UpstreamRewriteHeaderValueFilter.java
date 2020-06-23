@@ -12,9 +12,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * A UpstreamRewriteHeaderValueFilter is used to rewrite all header values
- * for a header name to the configured template
- * before the incoming request get processed by a HttpServlet.
+ * A UpstreamRewriteHeaderValueFilter is used to rewrite all header values for a
+ * header name to the configured template before the incoming request get
+ * processed by a HttpServlet.
  * 
  * configuration example:
  * 
@@ -41,62 +41,62 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class UpstreamRewriteHeaderValueFilter extends HttpFilter {
 
-	private static final long serialVersionUID = 6941983021246085864L;
+    private static final long serialVersionUID = 6941983021246085864L;
 
-	private static Logger log = Logger.getLogger(UpstreamRemoveHeaderFilter.class.getName());
+    private static Logger log = Logger.getLogger(UpstreamRemoveHeaderFilter.class.getName());
 
-	private String headerName;
-	private String headerValueRegex;
-	private String headerValueTemplate;
+    private String headerName;
+    private String headerValueRegex;
+    private String headerValueTemplate;
 
-	private Pattern headerValueRegexPattern;
+    private Pattern headerValueRegexPattern;
 
-	public UpstreamRewriteHeaderValueFilter() {
-	}
+    public UpstreamRewriteHeaderValueFilter() {
+    }
 
-	UpstreamRewriteHeaderValueFilter(String headerName, String headerValueRegex, String headerValueTemplate) {
-		initialize(headerName, headerValueRegex, headerValueTemplate);
-	}
+    UpstreamRewriteHeaderValueFilter(String headerName, String headerValueRegex, String headerValueTemplate) {
+        initialize(headerName, headerValueRegex, headerValueTemplate);
+    }
 
-	@Override
-	public void init() throws ServletException {
-		FilterConfig filterConfig = getFilterConfig();
-		String headerName = filterConfig.getInitParameter("headerName");
-		String headerValueRegex = filterConfig.getInitParameter("headerValueRegex");
-		String headerValueTemplate = filterConfig.getInitParameter("headerValueTemplate");
-		initialize(headerName, headerValueRegex, headerValueTemplate);
-	}
+    @Override
+    public void init() throws ServletException {
+        FilterConfig filterConfig = getFilterConfig();
+        String headerName = filterConfig.getInitParameter("headerName");
+        String headerValueRegex = filterConfig.getInitParameter("headerValueRegex");
+        String headerValueTemplate = filterConfig.getInitParameter("headerValueTemplate");
+        initialize(headerName, headerValueRegex, headerValueTemplate);
+    }
 
-	private void initialize(String headerName, String headerValueRegex, String headerValueTemplate) {
-		this.headerName = headerName;
-		this.headerValueRegex = headerValueRegex;
-		this.headerValueTemplate = headerValueTemplate;
+    private void initialize(String headerName, String headerValueRegex, String headerValueTemplate) {
+        this.headerName = headerName;
+        this.headerValueRegex = headerValueRegex;
+        this.headerValueTemplate = headerValueTemplate;
 
-		this.headerValueRegexPattern = Pattern.compile(headerValueRegex);
+        this.headerValueRegexPattern = Pattern.compile(headerValueRegex);
 
-		log.info("activated " + this.toString());
-	}
+        log.info("activated " + this.toString());
+    }
 
-	@Override
-	public void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-			throws IOException, ServletException {
+    @Override
+    public void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
 
-		if (request.getHeader(headerName) == null) {
-			chain.doFilter(request, response);
-			return;
-		}
+        if (request.getHeader(headerName) == null) {
+            chain.doFilter(request, response);
+            return;
+        }
 
-		MutableHttpServletRequest mutableRequest = new MutableHttpServletRequest(request);
-		mutableRequest.rewriteHeaderValuesMatchingPattern(headerName, headerValueRegexPattern, headerValueTemplate);
+        MutableHttpServletRequest mutableRequest = new MutableHttpServletRequest(request);
+        mutableRequest.rewriteHeaderValuesMatchingPattern(headerName, headerValueRegexPattern, headerValueTemplate);
 
-		chain.doFilter(mutableRequest, response);
-	}
+        chain.doFilter(mutableRequest, response);
+    }
 
-	@Override
-	public String toString() {
-		return String.format(
-				"UpstreamRewriteHeaderValueFilter[headerName=%s, headerValueRegex=%s, headerValueTemplate=%s]",
-				headerName, headerValueRegex, headerValueTemplate);
-	}
+    @Override
+    public String toString() {
+        return String.format(
+                "UpstreamRewriteHeaderValueFilter[headerName=%s, headerValueRegex=%s, headerValueTemplate=%s]",
+                headerName, headerValueRegex, headerValueTemplate);
+    }
 
 }

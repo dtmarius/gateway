@@ -24,69 +24,70 @@ import javax.servlet.http.HttpServletResponse;
  * The restricted headers connection, content-length, expect, host and upgrade
  * are automatically set by the application server.
  * 
- * If the response contains a body and the status code is not successful, the status code 200 is returned.
+ * If the response contains a body and the status code is not successful, the
+ * status code 200 is returned.
  * 
  * Headers can be processed stream up and down by various servlet filters.
  */
 public class GatewayServlet extends HttpServlet {
 
-	private static final long serialVersionUID = -9096942981327154354L;
+    private static final long serialVersionUID = -9096942981327154354L;
 
-	private final Logger log = Logger.getLogger(GatewayServlet.class.getSimpleName());
+    private final Logger log = Logger.getLogger(GatewayServlet.class.getSimpleName());
 
-	private String requestURLRegex;
-	private String targetURLTemplate;
+    private String requestURLRegex;
+    private String targetURLTemplate;
 
-	private Pattern pattern;
+    private Pattern pattern;
 
-	@Override
-	public void init() throws ServletException {
-		this.requestURLRegex = this.getInitParameter("requestURLRegex");
-		this.targetURLTemplate = this.getInitParameter("targetURLTemplate");
-		this.pattern = Pattern.compile(this.requestURLRegex);
-	}
+    @Override
+    public void init() throws ServletException {
+        this.requestURLRegex = this.getInitParameter("requestURLRegex");
+        this.targetURLTemplate = this.getInitParameter("targetURLTemplate");
+        this.pattern = Pattern.compile(this.requestURLRegex);
+    }
 
-	@Override
-	protected void service(final HttpServletRequest request, final HttpServletResponse response)
-			throws ServletException, IOException {
-		// TODO: implement support for query parameters
-		IncomingHttpRequest incomingHttpRequest = IncomingHttpRequest.ofHttpServletRequest(request);
-		incomingHttpRequest.resolveTargetURL(pattern, targetURLTemplate);
+    @Override
+    protected void service(final HttpServletRequest request, final HttpServletResponse response)
+            throws ServletException, IOException {
 
-		final HttpClient client = HttpClient.newHttpClient();
-		final HttpResponse.BodyHandler<byte[]> res = HttpResponse.BodyHandlers.ofByteArray();
-		try {
-			HttpRequest httpReq = incomingHttpRequest.toHttpRequest();
-			log.info("Calling URL: " + httpReq.uri().toString());
-			HttpResponse<byte[]> httpResponse = client.send(httpReq, res);
+        IncomingHttpRequest incomingHttpRequest = IncomingHttpRequest.ofHttpServletRequest(request);
+        incomingHttpRequest.resolveTargetURL(pattern, targetURLTemplate);
 
-			httpResponse.headers().map().forEach((headerName, headerValueList) -> {
-				String headerValue = headerValueList.stream().collect(Collectors.joining(", "));
-				log.info("httpResponse to res: " + headerName + ": " + headerValue);
+        final HttpClient client = HttpClient.newHttpClient();
+        final HttpResponse.BodyHandler<byte[]> res = HttpResponse.BodyHandlers.ofByteArray();
+        try {
+            HttpRequest httpReq = incomingHttpRequest.toHttpRequest();
+            log.info("Calling URL: " + httpReq.uri().toString());
+            HttpResponse<byte[]> httpResponse = client.send(httpReq, res);
 
-				if (HeaderUtils.isHeaderRestricted(headerName)) {
-					return;
-				}
-				response.addHeader(headerName, headerValue);
-			});
+            httpResponse.headers().map().forEach((headerName, headerValueList) -> {
+                String headerValue = headerValueList.stream().collect(Collectors.joining(", "));
+                log.info("httpResponse to res: " + headerName + ": " + headerValue);
 
-			byte[] body = httpResponse.body();
-			response.getOutputStream().write(body);
+                if (HeaderUtils.isHeaderRestricted(headerName)) {
+                    return;
+                }
+                response.addHeader(headerName, headerValue);
+            });
 
-			int status = response.getStatus();
-			if (body.length > 0 && isSuccessfulStatusCode(status) == false) {
-				response.setStatus(HttpServletResponse.SC_OK); // TODO: 200? or 207 or ?
-			}
+            byte[] body = httpResponse.body();
+            response.getOutputStream().write(body);
 
-		} catch (InterruptedException | URISyntaxException e) { // TODO: rethink error handling
-			e.printStackTrace();
-		}
+            int status = response.getStatus();
+            if (body.length > 0 && isSuccessfulStatusCode(status) == false) {
+                response.setStatus(HttpServletResponse.SC_OK); // TODO: 200? or 207 or ?
+            }
 
-		// response.sendError(404, "application error"); // TODO error codes
-	}
+        } catch (InterruptedException | URISyntaxException e) { // TODO: rethink error handling
+            e.printStackTrace();
+        }
 
-	private boolean isSuccessfulStatusCode(int status) {
-		return 200 <= status && status <= 299;
-	}
+        // response.sendError(404, "application error"); // TODO error codes
+    }
+
+    private boolean isSuccessfulStatusCode(int status) {
+        return 200 <= status && status <= 299;
+    }
 
 }

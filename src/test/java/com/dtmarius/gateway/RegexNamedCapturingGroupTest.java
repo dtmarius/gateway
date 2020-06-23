@@ -52,7 +52,7 @@ public class RegexNamedCapturingGroupTest {
 
         System.out.println("ende");
     }
-    
+
     @Test
     public void test3() {
         String input = "http://dtmarius.com/backend1/todos?sort=date";

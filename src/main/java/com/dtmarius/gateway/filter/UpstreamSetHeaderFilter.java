@@ -41,55 +41,53 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class UpstreamSetHeaderFilter extends HttpFilter {
 
-	private static final long serialVersionUID = -3010583173466063766L;
+    private static final long serialVersionUID = -3010583173466063766L;
 
-	private static Logger log = Logger.getLogger(UpstreamSetHeaderFilter.class.getName());
+    private static Logger log = Logger.getLogger(UpstreamSetHeaderFilter.class.getName());
 
-	private String headerName;
-	private String headerValue;
-	private boolean overwriteExistingHeader = true;
+    private String headerName;
+    private String headerValue;
+    private boolean overwriteExistingHeader = true;
 
-	public UpstreamSetHeaderFilter() {
-	}
+    public UpstreamSetHeaderFilter() {
+    }
 
-	UpstreamSetHeaderFilter(String headerName, String headerValue, boolean overwriteExistingHeader) {
-		this.headerName = headerName;
-		this.headerValue = headerValue;
-		this.overwriteExistingHeader = overwriteExistingHeader;
-		log.info("activated " + this.toString());
-	}
+    UpstreamSetHeaderFilter(String headerName, String headerValue, boolean overwriteExistingHeader) {
+        this.headerName = headerName;
+        this.headerValue = headerValue;
+        this.overwriteExistingHeader = overwriteExistingHeader;
+        log.info("activated " + this.toString());
+    }
 
-	@Override
-	public void init() throws ServletException {
-		FilterConfig filterConfig = getFilterConfig();
-		this.headerName = filterConfig.getInitParameter("headerName");
-		this.headerValue = filterConfig.getInitParameter("headerValue");
-		String overwriteExistingHeaderString = filterConfig.getInitParameter("overwriteExistingHeader");
-		this.overwriteExistingHeader = Boolean.valueOf(overwriteExistingHeaderString);
-		log.info("activated " + this.toString());
-	}
+    @Override
+    public void init() throws ServletException {
+        FilterConfig filterConfig = getFilterConfig();
+        this.headerName = filterConfig.getInitParameter("headerName");
+        this.headerValue = filterConfig.getInitParameter("headerValue");
+        String overwriteExistingHeaderString = filterConfig.getInitParameter("overwriteExistingHeader");
+        this.overwriteExistingHeader = Boolean.valueOf(overwriteExistingHeaderString);
+        log.info("activated " + this.toString());
+    }
 
-	@Override
-	public void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-			throws IOException, ServletException {
+    @Override
+    public void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
 
-		if (request.getHeader(headerName) != null && overwriteExistingHeader == false) {
-			chain.doFilter(request, response);
-			return;
-		}
+        if (request.getHeader(headerName) != null && overwriteExistingHeader == false) {
+            chain.doFilter(request, response);
+            return;
+        }
 
-		MutableHttpServletRequest mutableRequest = new MutableHttpServletRequest(request);
-		mutableRequest.setHeader(this.headerName, this.headerValue);
+        MutableHttpServletRequest mutableRequest = new MutableHttpServletRequest(request);
+        mutableRequest.setHeader(this.headerName, this.headerValue);
 
-		// Prüfen ob der filter auch rückwärts durchlaufen wird! Um sicher zu gehen
-		// das der Filter nur Upstream aufgerufen wird.
-		chain.doFilter(mutableRequest, response);
-	}
+        chain.doFilter(mutableRequest, response);
+    }
 
-	@Override
-	public String toString() {
-		return String.format("UpstreamSetHeaderFilter[headerName=%s, headerValue=%s, overwriteExistingHeader=%s]",
-				headerName, headerValue, overwriteExistingHeader);
-	}
+    @Override
+    public String toString() {
+        return String.format("UpstreamSetHeaderFilter[headerName=%s, headerValue=%s, overwriteExistingHeader=%s]",
+                headerName, headerValue, overwriteExistingHeader);
+    }
 
 }
