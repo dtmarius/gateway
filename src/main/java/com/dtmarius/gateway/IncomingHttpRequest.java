@@ -35,7 +35,7 @@ public class IncomingHttpRequest {
     }
 
     public static IncomingHttpRequest ofHttpServletRequest(final HttpServletRequest servletRequest) throws IOException {
-        final URL url = new URL(servletRequest.getRequestURL().toString());
+        final URL url = getFullRequestURL(servletRequest);
 
         final String method = servletRequest.getMethod();
 
@@ -69,6 +69,15 @@ public class IncomingHttpRequest {
         final HttpRequest httpRequest = HttpRequest.newBuilder().uri(this.getUrl().toURI()).headers(headers)
                 .method(this.getMethod(), HttpRequest.BodyPublishers.ofByteArray(this.getBody())).build();
         return httpRequest;
+    }
+
+    private static URL getFullRequestURL(final HttpServletRequest servletRequest) throws MalformedURLException {
+        StringBuffer fullRequestURLString = servletRequest.getRequestURL();
+        String queryString = servletRequest.getQueryString();
+        if (queryString != null) {
+            fullRequestURLString.append("?").append(queryString);
+        }
+        return new URL(fullRequestURLString.toString());
     }
 
     public URL resolveTargetURL(final Pattern pattern, final String targetURLTemplate) throws MalformedURLException {
