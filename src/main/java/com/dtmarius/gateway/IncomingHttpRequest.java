@@ -5,6 +5,7 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.http.HttpRequest;
+import java.net.http.HttpClient.Version;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -66,7 +67,7 @@ public class IncomingHttpRequest {
 
         final String[] headers = headerList.toArray(new String[headerList.size()]);
 
-        final HttpRequest httpRequest = HttpRequest.newBuilder().uri(this.getUrl().toURI()).headers(headers)
+        final HttpRequest httpRequest = HttpRequest.newBuilder().version(Version.HTTP_1_1).uri(this.getUrl().toURI()).headers(headers)
                 .method(this.getMethod(), HttpRequest.BodyPublishers.ofByteArray(this.getBody())).build();
         return httpRequest;
     }
