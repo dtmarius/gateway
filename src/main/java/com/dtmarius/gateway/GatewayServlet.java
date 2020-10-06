@@ -55,11 +55,11 @@ public class GatewayServlet extends HttpServlet {
         incomingHttpRequest.resolveTargetURL(pattern, targetURLTemplate);
 
         final HttpClient client = HttpClient.newHttpClient();
-        final HttpResponse.BodyHandler<byte[]> res = HttpResponse.BodyHandlers.ofByteArray();
+        final HttpResponse.BodyHandler<byte[]> bodyHandler = HttpResponse.BodyHandlers.ofByteArray();
         try {
             HttpRequest httpReq = incomingHttpRequest.toHttpRequest();
             log.info("Calling URL: " + httpReq.uri().toString());
-            HttpResponse<byte[]> httpResponse = client.send(httpReq, res);
+            HttpResponse<byte[]> httpResponse = client.send(httpReq, bodyHandler);
 
             httpResponse.headers().map().forEach((headerName, headerValueList) -> {
                 String headerValue = headerValueList.stream().collect(Collectors.joining(", "));
@@ -72,6 +72,10 @@ public class GatewayServlet extends HttpServlet {
             });
 
             byte[] body = httpResponse.body();
+
+
+
+            // response.setCharacterEncoding(); TODO: set character encoding if missing
             response.getOutputStream().write(body);
 
             int status = response.getStatus();
