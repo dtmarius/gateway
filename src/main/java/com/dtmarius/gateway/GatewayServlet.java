@@ -6,11 +6,14 @@
 package com.dtmarius.gateway;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -47,19 +50,33 @@ public class GatewayServlet extends HttpServlet {
         this.pattern = Pattern.compile(this.requestURLRegex);
     }
 
+    protected String resolveDestinationURL(final Pattern pattern, final String targetURLTemplate,
+            final String sourceURL) throws MalformedURLException {
+
+        final Matcher matcher = pattern.matcher(sourceURL);
+        if (matcher.find() == false) {
+            throw new IllegalStateException(
+                    "Destination url could not be determined, check the configuration for the servlet "
+                            + this.getServletName());
+        }
+
+        final String resolvedTargetURL = matcher.replaceAll(targetURLTemplate);
+        return resolvedTargetURL;
+    }
+
     @Override
     protected void service(final HttpServletRequest request, final HttpServletResponse response)
             throws ServletException, IOException {
 
-        IncomingHttpRequest incomingHttpRequest = IncomingHttpRequest.ofHttpServletRequest(request);
-        incomingHttpRequest.resolveTargetURL(pattern, targetURLTemplate);
+        HttpRequestDto requestDto = HttpRequestMapper.mapHttpServletRequestToHttpRequestDto(request);
+        requestDto.url = resolveDestinationURL(pattern, targetURLTemplate, requestDto.url);
 
         final HttpClient client = HttpClient.newHttpClient();
         final HttpResponse.BodyHandler<byte[]> bodyHandler = HttpResponse.BodyHandlers.ofByteArray();
         try {
-            HttpRequest httpReq = incomingHttpRequest.toHttpRequest();
-            log.info("Calling URL: " + httpReq.uri().toString());
-            HttpResponse<byte[]> httpResponse = client.send(httpReq, bodyHandler);
+            HttpRequest targetHttpReq = HttpRequestMapper.mapHttpRequestDtoToHttpRequest(requestDto);
+            log.info("Calling URL: " + targetHttpReq.uri().toString());
+            HttpResponse<byte[]> httpResponse = client.send(targetHttpReq, bodyHandler);
 
             httpResponse.headers().map().forEach((headerName, headerValueList) -> {
                 String headerValue = headerValueList.stream().collect(Collectors.joining(", "));
@@ -68,14 +85,21 @@ public class GatewayServlet extends HttpServlet {
                 if (HeaderUtils.isHeaderRestricted(headerName)) {
                     return;
                 }
+                // TODO: encode headervalues containing octet strtings
                 response.addHeader(headerName, headerValue);
             });
 
             byte[] body = httpResponse.body();
 
+            String charset = detectBodyCharacterEncoding(httpResponse);
 
-
-            // response.setCharacterEncoding(); TODO: set character encoding if missing
+            
+            /**
+             * TODO: Possible Feature: If the origin client send an accept or accept-charset
+             * header check if the detected charset is accepted. when not, convert to one
+             * the origin client accepts.
+             */
+            response.setCharacterEncoding(charset);
             response.getOutputStream().write(body);
 
             int status = response.getStatus();
@@ -88,6 +112,10 @@ public class GatewayServlet extends HttpServlet {
         }
 
         // response.sendError(404, "application error"); // TODO error codes
+    }
+
+    private String detectBodyCharacterEncoding(HttpResponse<byte[]> httpResponse) {
+        return null;
     }
 
     private boolean isSuccessfulStatusCode(int status) {
