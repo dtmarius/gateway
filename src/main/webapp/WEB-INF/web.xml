@@ -19,6 +19,10 @@
             <param-name>targetURLTemplate</param-name>
             <param-value>${protocol}://example.com/${path}</param-value>
         </init-param>
+        <init-param>
+            <param-name>respondStatuscodeOnBackendErrorWithBodyContent</param-name>
+            <param-value>200</param-value>
+        </init-param>
     </servlet>
     <servlet-mapping>
         <servlet-name>backend1-gateway</servlet-name>
